@@ -1,50 +1,108 @@
 // initialize context
 kaboom({
-	background: [ 255, 250, 205 ],
+	background: [ 119, 136, 153 ],
 });
 
-// load assets
-loadSprite("dino", "sprites/Dino.png");
-loadSprite("donut", "sprites/Donut.png");
-// add a character to screen
+scene("game", ({score}) => {  
+  const reversed_letters = ["b","d","p","q"];
 
-// Add multiple donuts
-for (let i = 0; i < 10; i++) {
+  loadSound("score", "sounds/score.mp3");
+  loadSound("burp", "sounds/burp.mp3");
+  loadSound("applause", "sounds/applause.wav");
 
-	// generate a random point on screen
-	// width() and height() gives the game dimension
-	const x = rand(0, width())
-	const y = rand(0, height())
+  var letter = reversed_letters[Math.floor(Math.random() * reversed_letters.length)];
 
-	add([
-		sprite("donut"),
-		pos(x, y),
-    scale(.2),
-    area(),
-    "donut",
-	])
+  var current_letter = add([
+    text(letter ,{
+      size: 300,
+    }),
+      width(width()/2),
+      pos(width()/2, height()/6),
+      color(255,255,0),
+  ]);
+
+const score_label = add([
+  text("score: 0"),
+  pos(width()/1.5,height()/1.1),
+  { value: 0, size:5 },
+])
+
+function generate_letter(){
+  letter = reversed_letters[Math.floor(Math.random() * reversed_letters.length)];
+  current_letter.text = letter;
 };
 
-//Add dino with a list of properties
-const dino = add([
-	// list of components
-	sprite("dino"),
-	pos(80, 40),
-	area(),
-  scale(.3),
-]);
+function update_score(){
+  score++;
+  score_label.text = "Score: " + score;
+  play("score");
+};
 
-//have dino follow the mouse position and remove the cursor
-dino.onUpdate(() => {
-	dino.pos = mousePos();
-  cursor("none");
+onKeyPress("up", () => {
+  if (letter == "p"){
+    update_score();
+    generate_letter();
+    } else {
+      //debug.log("nope! try another");
+      generate_letter();
+      burp();
+    }
 });
 
-//detect when dino and donut collide- then destroy the donut and burp. Note: ensure the donut has a tag of donut placed in "" as well as having the area() property. Collide will not work otherwise.
-dino.onCollide("donut", (donut) => {
-	destroy(donut);
-  burp();
+onKeyPress("down", () => {
+  if (letter == "q"){
+    update_score()
+    generate_letter();
+    } else {
+      //debug.log("nope! try another");
+      generate_letter();
+      burp();
+    }
 });
 
-//play Kaboom animation when the mouse is clicked
-onClick(() => addKaboom(mousePos()));
+onKeyPress("right", () => {
+  if (letter == "b"){
+    update_score();
+    generate_letter();
+    } else {
+      //debug.log("nope! try another");
+      generate_letter();
+      burp();
+    }
+});
+
+onKeyPress("left", () => {
+  if (letter == "d"){
+    update_score();
+    generate_letter();
+    } else {
+      //debug.log("nope! try another");
+      generate_letter();
+      burp();
+    }
+});
+
+wait(30, () => {
+    go("done", {score: score, });
+});
+
+});
+
+scene("done", ({score}) => {
+  add([
+		text(`All done! Your final score is ${score}!`, {
+			width: width(),
+		}),
+		pos(12, height()/2),
+	])
+  play("applause");
+  onKeyPress(start);
+});
+
+function start(){
+  go("game",{
+    score:0,
+  })
+}
+
+start();
